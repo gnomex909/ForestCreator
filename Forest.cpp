@@ -41,51 +41,27 @@ Forest::Forest(unsigned int height, unsigned int width) : height(height), width(
     }
 }
 
-std::string Forest::showHeight() {
-    std::stringstream heightString;
+std::string Forest::showData(int dataType) {
+    std::stringstream stringstream;
     for(unsigned int i=0; i<height;i++){
-        heightString<<"[";
+        stringstream<<"[";
         for(unsigned int j=0; j<width;j++){
             if(j!=-0){
-                heightString<<" ";
+                stringstream<<" ";
             }
-            heightString<<forest_cells[i][j].getHeight();
+            if(dataType == HEIGHT) {
+                stringstream << forest_cells[i][j].getHeight();
+            }else if(dataType == RATE){
+                stringstream << forest_cells[i][j].getFireRate();
+            }else if(dataType == STATE){
+                stringstream << forest_cells[i][j].getState();
+            }
         }
-        heightString<<"]"<<std::endl;
+        stringstream<<"]"<<std::endl;
     }
-    return heightString.str();
+    return stringstream.str();
 }
 
-std::string Forest::showState() {
-    std::stringstream stateString;
-    for(unsigned int i=0; i<height;i++){
-        stateString << "[";
-        for(unsigned int j=0; j<width;j++){
-            if(j!=-0){
-                stateString<<" ";
-            }
-            stateString << forest_cells[i][j].getState();
-        }
-        stateString << "]" << std::endl;
-    }
-    return stateString.str();
-}
-
-std::string Forest::showRate() {
-    std::stringstream rateString;
-    for(unsigned int i=0; i<height;i++){
-
-        rateString << "[";
-        for(unsigned int j=0; j<width;j++){
-            if(j!=-0){
-                rateString<<" ";
-            }
-            rateString << forest_cells[i][j].getFireRate();
-        }
-        rateString << "]" << std::endl;
-    }
-    return rateString.str();
-}
 
 double Forest::getEquationValue(const int x, const int eqLevel, const double constant, const double arg_pow1,
                                 const double arg_pow2, const double arg_pow3) {
@@ -108,14 +84,45 @@ double Forest::sumFunction(const unsigned int x,const int xPow,const std::vector
     yRes = getEquationValue(y,yPow,yArgs[0],yArgs[1],yArgs[2],yArgs[3]);
     return xRes+yRes;
 }
-void Forest::setHeightFunction(const int xPow, const std::vector<double> &xArgs,const int yPow, const std::vector<double> &yArgs, const double xOffset, const double yOffset) {
+void Forest::setDataFunction(const int dataType,const int xPow, const std::vector<double> &xArgs,const int yPow, const std::vector<double> &yArgs, const double xOffset, const double yOffset) {
     for(unsigned int i=0; i<height;i++){
         for(unsigned int j=0; j<width;j++){
             double result = sumFunction(j-xOffset, xPow, xArgs, i-yOffset, yPow,yArgs);
-//            std::cout<<"Got there!"<<std::endl;
-            forest_cells[i][j].setHeight(result);
+            if(dataType==HEIGHT) {
+                forest_cells[i][j].setHeight(result);
+            }else if(dataType==RATE){
+                forest_cells[i][j].setFireRate(result);
+            }
         }
     }
+}
+
+void Forest::setAreaValue(int dataType, double value, int upperLimit, int lowerLimit, int leftLimit, int rightLimit) {
+    for(unsigned int i=lowerLimit; i<=upperLimit;i++){
+        for(unsigned int j=leftLimit; j<=rightLimit;j++){
+            if(dataType==HEIGHT) {
+                forest_cells[i][j].setHeight(value);
+            }else if(dataType==RATE){
+                forest_cells[i][j].setFireRate(value);
+            }
+        }
+    }
+}
+
+void Forest::setCellValue(int dataType, double value, int x, int y) {
+    if(dataType==HEIGHT) {
+        forest_cells[y][x].setHeight(value);
+    }else if(dataType==RATE){
+        forest_cells[y][x].setFireRate(value);
+    }
+}
+
+const std::vector<std::vector<Cell>> &Forest::getForestCells() const {
+    return forest_cells;
+}
+
+void Forest::setForestCells(const std::vector<std::vector<Cell>> &forestCells) {
+    forest_cells = forestCells;
 }
 
 

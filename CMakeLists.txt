@@ -4,4 +4,4 @@ project(ForestCreator)
 
 set(CMAKE_CXX_STANDARD 11)
 
-add_executable(ForestCreator main.cpp Cell.cpp Cell.h Forest.cpp Forest.h)
+add_executable(ForestCreator main.cpp Cell.cpp Cell.h Forest.cpp Forest.h Fire.cpp Fire.h)
