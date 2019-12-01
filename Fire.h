@@ -29,6 +29,12 @@ public:
 
     void simNextStep();
 
+    double heightFunction(unsigned int yMain, unsigned int xMain, unsigned int yComp, unsigned int xComp);
+
+    double windFunction(unsigned int currentMovement);
+
+    double rateFunction(unsigned int yMain, unsigned int xMain, unsigned int yComp, unsigned int xComp);
+
     double getCellState(int x, int y);
 };
 

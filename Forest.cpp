@@ -114,6 +114,8 @@ void Forest::setCellValue(int dataType, double value, int x, int y) {
         forest_cells[y][x].setHeight(value);
     }else if(dataType==RATE){
         forest_cells[y][x].setFireRate(value);
+    }else if(dataType==STATE){
+        forest_cells[y][x].setState(value);
     }
 }
 
