@@ -35,6 +35,8 @@ public:
 
     double rateFunction(unsigned int yMain, unsigned int xMain, unsigned int yComp, unsigned int xComp);
 
+    double proximityFunction(unsigned int currentMovement);
+
     double getCellState(int x, int y);
 };
 

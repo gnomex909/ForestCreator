@@ -37,20 +37,34 @@ void Fire::simNextStep() {
     std::cout<<"Finished coping"<<std::endl;
     for(unsigned int i=0; i<forest.getHeight();i++){
         for(unsigned int j=0; j<forest.getWidth();j++){
-            double newState = forest.getForestCells()[i][j].getState();
-            std::cout<<"State of ["<<j<<","<<i<<"] at the beggining:"<<newState<<std::endl;
-            for(unsigned int k=0; k<X_MOVEMENT.size();k++){
-                unsigned int y = i+Y_MOVEMENT[k];
-                unsigned int x = j+X_MOVEMENT[k];
-                std::cout<<"Checking if exists: ["<<x<<","<<y<<"]"<<std::endl;
-                if(y>0 && y<forest.getHeight() && x >0 && x<forest.getWidth()){
-                    std::cout<<"Correct cell"<<std::endl;
-                    newState += statesCurrentStep[x][y]*heightFunction(i,j,y,x)*
-                            rateFunction(i,j,y,x)*windFunction(k);
-                    std::cout<<"State of ["<<j<<","<<i<<"] after "<<k<<" change:"<<newState<<std::endl;
+            if(!is_burned_up[i][j]) {
+                double newState = forest.getForestCells()[i][j].getState();
+                std::cout << "State of [" << j << "," << i << "] at the beggining:" << newState << std::endl;
+                for (unsigned int k = 0; k < X_MOVEMENT.size(); k++) {
+                    int y = i + Y_MOVEMENT[k];
+                    int x = j + X_MOVEMENT[k];
+                    std::cout << "Checking if exists: [" << x << "," << y << "]" << std::endl;
+                    if (y >= 0 && y < forest.getHeight() && x >= 0 && x < forest.getWidth()) {
+                        std::cout << "Correct cell" << std::endl;
+                        newState += statesCurrentStep[x][y] * heightFunction(i, j, y, x) *
+                                    rateFunction(i, j, y, x) * windFunction(k) * proximityFunction(k);
+                        if (newState >= 1.0) {
+                            burned_cell_count++;
+                            is_burned_up[i][j] = true;
+                        }
+                        std::cout << "State of [" << j << "," << i << "] after " << k << " change:" << newState
+                                  << std::endl;
+                    } else {
+                        std::cout << "Incorrect cell" << std::endl;
+                    }
                 }
+                forest.setCellValue(STATE, std::min(newState, 1.0), j, i);
             }
         }
+    }
+    std::cout<<forest.showData(STATE)<<std::endl;
+    if(burned_cell_count == forest_cell_count){
+        std::cout<<"Forest is burned up"<<std::endl;
     }
 }
 
@@ -64,4 +78,12 @@ double Fire::windFunction(unsigned int currentMovement) {
 
 double Fire::rateFunction(unsigned int yMain, unsigned int xMain, unsigned int yComp, unsigned int xComp) {
     return 1.0;
+}
+
+double Fire::proximityFunction(unsigned int currentMovement) {
+    if(currentMovement<3){
+        return 1.0;
+    }else{
+        return 0.83;
+    }
 }
