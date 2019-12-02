@@ -55,6 +55,8 @@ std::string Forest::showData(int dataType) {
                 stringstream << forest_cells[i][j].getFireRate();
             }else if(dataType == STATE){
                 stringstream << forest_cells[i][j].getState();
+            }else if(dataType == TURN){
+                stringstream << forest_cells[i][j].getTurnOfBurning();
             }
         }
         stringstream<<"]"<<std::endl;
@@ -116,6 +118,8 @@ void Forest::setCellValue(int dataType, double value, int x, int y) {
         forest_cells[y][x].setFireRate(value);
     }else if(dataType==STATE){
         forest_cells[y][x].setState(value);
+    }else if(dataType==TURN){
+        forest_cells[y][x].setTurnOfBurning((int)value);
     }
 }
 

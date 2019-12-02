@@ -12,6 +12,7 @@
 static const int HEIGHT = 0;
 static const int RATE = 1;
 static const int STATE = 2;
+static const int TURN = 4;
 class Forest {
     std::vector<std::vector<Cell>> forest_cells;
     unsigned int height;

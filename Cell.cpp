@@ -33,4 +33,12 @@ void Cell::setState(double state) {
     Cell::state = state;
 }
 
+int Cell::getTurnOfBurning() const {
+    return turn_of_burning;
+}
+
+void Cell::setTurnOfBurning(int turnOfBurning) {
+    turn_of_burning = turnOfBurning;
+}
+
 

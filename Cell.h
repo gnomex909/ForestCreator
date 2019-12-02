@@ -10,6 +10,7 @@ class Cell {
     double height = 10;
     double fire_rate = 1.0;
     double state =0.0;
+    int turn_of_burning = -1;
 public:
     Cell();
 
@@ -26,6 +27,10 @@ public:
     double getState() const;
 
     void setState(double state);
+
+    int getTurnOfBurning() const;
+
+    void setTurnOfBurning(int turnOfBurning);
 };
 
 

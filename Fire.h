@@ -12,16 +12,23 @@ static const int NORTH = 0;
 static const int SOUTH = 1;
 static const int EAST = 2;
 static const int WEST = 3;
+static const int NORTHEAST = 4;
+static const int NORTHWEST = 5;
+static const int SOUTHEAST = 6;
+static const int SOUTHWEST = 7;
 
 static const std::vector<int> Y_MOVEMENT{1,-1,0,0,1,1,-1,-1};
 static const std::vector<int> X_MOVEMENT{0,0,1,-1,1,-1,1,-1};
 class Fire {
     double max_fire_rate = 0;
     std::vector<std::vector<bool>> is_burned_up;
-    std::vector<double> winds = {1.0,1.0,1.0,1.0};
+    std::vector<double> winds = {1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0};
     int burned_cell_count = 0;
     int forest_cell_count;
+    bool forest_burned_up;
     Forest& forest;
+    int turn=0;
+    bool final_data_shown = false;
 public:
     Fire(Forest &forest);
 
