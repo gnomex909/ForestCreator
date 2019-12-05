@@ -7,9 +7,13 @@
 
 
 class Cell {
+    //Height of the cell
     double height = 10;
+    //Rate of burning, right now 1.0 means it will be fully burned in 1 time step
     double fire_rate = 1.0;
+    //State of the cell
     double state =0.0;
+    //Turn during which it got burned fully
     int turn_of_burning = -1;
 public:
     Cell();

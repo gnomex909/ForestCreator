@@ -23,16 +23,9 @@ void Forest::setWidth(unsigned int width) {
     Forest::width = width;
 }
 
-const std::vector<double> &Forest::getWindForce() const {
-    return wind_force;
-}
-
-void Forest::setWindForce(const std::vector<double> &windForce) {
-    wind_force = windForce;
-}
-
 Forest::Forest(unsigned int height, unsigned int width) : height(height), width(width) {
-    std::cout<<"Starting constructor"<<std::endl;
+//    std::cout<<"Starting constructor"<<std::endl;
+//Creation of forest cells array
     for(unsigned int i=0; i<height;i++){
         forest_cells.emplace_back(std::vector<Cell>());
         for(unsigned int j=0; j<width;j++){
@@ -89,7 +82,7 @@ double Forest::sumFunction(const unsigned int x,const int xPow,const std::vector
 void Forest::setDataFunction(const int dataType,const int xPow, const std::vector<double> &xArgs,const int yPow, const std::vector<double> &yArgs, const double xOffset, const double yOffset) {
     for(unsigned int i=0; i<height;i++){
         for(unsigned int j=0; j<width;j++){
-            double result = sumFunction(j-xOffset, xPow, xArgs, i-yOffset, yPow,yArgs);
+            double result = sumFunction(j+xOffset, xPow, xArgs, i+yOffset, yPow,yArgs);
             if(dataType==HEIGHT) {
                 forest_cells[i][j].setHeight(result);
             }else if(dataType==RATE){
@@ -100,8 +93,8 @@ void Forest::setDataFunction(const int dataType,const int xPow, const std::vecto
 }
 
 void Forest::setAreaValue(int dataType, double value, int upperLimit, int lowerLimit, int leftLimit, int rightLimit) {
-    for(unsigned int i=lowerLimit; i<=upperLimit;i++){
-        for(unsigned int j=leftLimit; j<=rightLimit;j++){
+    for(int i=upperLimit; i <= lowerLimit; i++){
+        for(int j=leftLimit; j<=rightLimit;j++){
             if(dataType==HEIGHT) {
                 forest_cells[i][j].setHeight(value);
             }else if(dataType==RATE){
