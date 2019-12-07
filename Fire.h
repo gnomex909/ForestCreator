@@ -116,6 +116,8 @@ public:
     Forest &getForest() const;
 
     void setForest(Forest &forest);
+
+    void setWind(int windDirection, double value);
 };
 
 

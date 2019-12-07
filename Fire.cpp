@@ -124,24 +124,24 @@ double Fire::heightFunction(const unsigned int yMain,const unsigned int xMain,co
 }
 
 double Fire::windFunction(const unsigned int currentMovement) {
-    //We have to remember that if we check northern cell, actually south wind affects the result etc.
+    //We have to remember that northern wind actually comes from NORTH
     switch(currentMovement){
         case 0:
-            return winds[SOUTH];
-        case 1:
             return winds[NORTH];
+        case 1:
+            return winds[SOUTH];
         case 2:
-            return winds[WEST];
-        case 3:
             return winds[EAST];
+        case 3:
+            return winds[WEST];
         case 4:
-            return winds[SOUTHWEST];
-        case 5:
-            return winds[SOUTHEAST];
-        case 6:
-            return winds[NORTHWEST];
-        case 7:
             return winds[NORTHEAST];
+        case 5:
+            return winds[NORTHWEST];
+        case 6:
+            return winds[SOUTHEAST];
+        case 7:
+            return winds[SOUTHWEST];
         default:
             return 1.0;
 
@@ -150,6 +150,12 @@ double Fire::windFunction(const unsigned int currentMovement) {
 
 double Fire::rateFunction(const unsigned int yMain,const unsigned int xMain,const unsigned int yComp,const unsigned int xComp) {
     //We simply compare fire rate of main cell to maximum, to which our time-step is fused to
+    if(forest.getForestCells()[yMain][xMain].getFireRate()==0){
+        if(!is_burned_up[yMain][xMain]) {
+            burned_cell_count++;
+            is_burned_up[yMain][xMain] = true;
+        }
+    }
     return forest.getForestCells()[yMain][xMain].getFireRate()/max_fire_rate;
 }
 
@@ -158,7 +164,7 @@ double Fire::proximityFunction(const unsigned int currentMovement) {
     if(currentMovement<3){
         return 1.0;
     }else{
-        return 0.6333;
+        return 0.707;
     }
 }
 
@@ -176,4 +182,8 @@ Forest &Fire::getForest() const {
 
 void Fire::setForest(Forest &forest) {
     Fire::forest = forest;
+}
+
+void Fire::setWind(int windDirection,double value) {
+    Fire::winds[windDirection]= value;
 }
