@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <cmath>
+#include <chrono>
 #include "Fire.h"
 
 Fire::Fire(Forest &forest) : forest(forest) {
@@ -17,13 +18,18 @@ Fire::Fire(Forest &forest) : forest(forest) {
         }
     }
     forest_cell_count = forest.getHeight() * forest.getWidth();
+    uint64_t timeSeed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+    std::seed_seq ss{uint32_t(timeSeed & 0xffffffff), uint32_t(timeSeed>>32)};
+    rng.seed(ss);
 }
 
 void Fire::startFire(const int x,const int y,const double state) {
     forest.setCellValue(STATE, state, x,y);
+    forest.setCellValue(STATUS,BURNING,x,y);
     if(state>=1.0){
         forest.setCellValue(STATE,1.0,x,y);
         forest.setCellValue(TURN,0,x,y);
+        forest.setCellValue(STATUS,BURNED,x,y);
         is_burned_up[y][x]=true;
         burned_cell_count++;
     }
@@ -34,53 +40,70 @@ double Fire::getCellState(const int x,const int y) {
 }
 
 int Fire::simNextStep() {
+    // initialize a uniform distribution between 0 and 1
+    std::uniform_real_distribution<double> unif(0, 1);
  //We increase time step we are calculating for
     turn++;
     //If forest isn't fully burned up
     if(!forest_burned_up) {
         //We create vector that saves the state of cells from the last turn
         std::vector<std::vector<double>> statesCurrentStep;
+        std::vector<std::vector<int>> statusCurrentStep;
         for (unsigned int i = 0; i < forest.getHeight(); i++) {
             statesCurrentStep.emplace_back(std::vector<double>());
+            statusCurrentStep.emplace_back(std::vector<int>());
             for (unsigned int j = 0; j < forest.getWidth(); j++) {
                 statesCurrentStep[i].push_back(forest.getForestCells()[i][j].getState());
+                statusCurrentStep[i].push_back(forest.getForestCells()[i][j].getStatus());
             }
         }
         //We save that state to be saved in JSON later on
         states_during_turns.push_back(statesCurrentStep);
+        status_during_turns.push_back(statusCurrentStep);
 //        std::cout << "Finished copying" << std::endl;
         //For all cells in forest
         for (unsigned int i = 0; i < forest.getHeight(); i++) {
             for (unsigned int j = 0; j < forest.getWidth(); j++) {
                 //We check if it's burned up, if not we calculate it's state
                 if (!is_burned_up[i][j]) {
-                    //We start from state from last turn
-                    double newState = forest.getForestCells()[i][j].getState();
-//                    std::cout << "State of [" << j << "," << i << "] at the beggining:" << newState << std::endl;
-                    //Then we add state based on all adjacent cells
-                    for (unsigned int k = 0; k < X_MOVEMENT.size(); k++) {
-                        int y = i + Y_MOVEMENT[k];
-                        int x = j + X_MOVEMENT[k];
+                    //We check if status of the cell is unburned
+                    if(forest.getForestCells()[i][j].getStatus()==FUEL){
+//                      Our threshold if no neighbours is burning equals 0.0
+                        double threshold = 0.0;
+                        //Then we add state based on all adjacent cells
+                        for (unsigned int k = 0; k < X_MOVEMENT.size(); k++) {
+                            int y = i + Y_MOVEMENT[k];
+                            int x = j + X_MOVEMENT[k];
 //                        std::cout << "Checking if exists: [" << x << "," << y << "]" << std::endl;
-                        //Check if cell is actually inside the graph
-                        if (y >= 0 && y < forest.getHeight() && x >= 0 && x < forest.getWidth()) {
-//                           //We add to newState result of all the equations
-                            newState += statesCurrentStep[y][x] * heightFunction(i, j, y, x) *
-                                        rateFunction(i, j, y, x) * windFunction(k) * proximityFunction(k);
+                            //Check if cell is actually inside the graph
+                            if (y >= 0 && y < forest.getHeight() && x >= 0 && x < forest.getWidth()) {
+//                           //We add to result of all the equations
+                                threshold += heightFunction(i, j, y, x) *
+                                             rateFunction(i, j, y, x) * windFunction(k) * statusFunction(statusCurrentStep[y][x]);
 //                            std::cout << "State of [" << j << "," << i << "] after " << k << " change:" << newState
 //                                      << std::endl;
-                        } else {
+                            } else {
 //                            std::cout << "Incorrect cell" << std::endl;
+                            }
+
                         }
+                        //We roll rundom number between 0 and 1, to check if cell managed to start burning
+                        double randomNumber = unif(rng);
+                        if(randomNumber<=threshold){
+                            forest.setCellValue(STATUS,BURNING,j,i);
+                        }
+                    }else if(forest.getForestCells()[i][j].getStatus()==BURNING) {
+                        //if cell is already burning, we update it's state, by adding fire rate until it's gets to 1.0
+                        double newState = forest.getForestCells()[i][j].getState() + forest.getForestCells()[i][j].getFireRate();
+                        if (newState >= 1.0) {
+                            burned_cell_count++;
+                            is_burned_up[i][j] = true;
+                            forest.setCellValue(TURN, turn, j, i);
+                            forest.setCellValue(STATUS, BURNED, j, i);
+                        }
+                        //Safety check, to not get state higher than 1.0
+                        forest.setCellValue(STATE, std::min(newState, 1.0), j, i);
                     }
-                    //Check for optimisation purposes and saving turn of fully burning up
-                    if (newState >= 1.0) {
-                        burned_cell_count++;
-                        is_burned_up[i][j] = true;
-                        forest.setCellValue(TURN, turn, j, i);
-                    }
-                    //Safety check, to not get state higher than 1.0
-                    forest.setCellValue(STATE, std::min(newState, 1.0), j, i);
                 }
             }
         }
@@ -159,12 +182,12 @@ double Fire::rateFunction(const unsigned int yMain,const unsigned int xMain,cons
     return forest.getForestCells()[yMain][xMain].getFireRate()/max_fire_rate;
 }
 
-double Fire::proximityFunction(const unsigned int currentMovement) {
-    //If it's adjacent return 1.0, else return... Whatever we want
-    if(currentMovement<3){
-        return 1.0;
+double Fire::statusFunction(const int status) {
+    //If neighbour is in those state we return 1/8
+    if(status==BURNING || status==BURNED){
+        return 0.125;
     }else{
-        return 0.707;
+        return 0;
     }
 }
 
@@ -186,4 +209,8 @@ void Fire::setForest(Forest &forest) {
 
 void Fire::setWind(int windDirection,double value) {
     Fire::winds[windDirection]= value;
+}
+
+const std::vector<std::vector<std::vector<int>>> &Fire::getStatusDuringTurns() const {
+    return status_during_turns;
 }
