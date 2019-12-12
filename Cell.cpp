@@ -41,4 +41,12 @@ void Cell::setTurnOfBurning(int turnOfBurning) {
     turn_of_burning = turnOfBurning;
 }
 
+int Cell::getStatus() const {
+    return status;
+}
+
+void Cell::setStatus(int status) {
+    Cell::status = status;
+}
+
 

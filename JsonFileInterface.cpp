@@ -20,6 +20,7 @@
         rapidjson::Value heightOfCells(rapidjson::kArrayType);
         rapidjson::Value rateOfCells(rapidjson::kArrayType);
         rapidjson::Value stateOfCells(rapidjson::kArrayType);
+        rapidjson::Value statusOfCells(rapidjson::kArrayType);
         //Objects of height and width, instantly added to the document
         rapidjson::Value forestHeight(forest.getHeight());
         rapidjson::Value forestWidth(forest.getWidth());
@@ -43,20 +44,26 @@
         document.AddMember("turns_burning",turnOfBurning,document.GetAllocator());
         document.AddMember("cell_height",heightOfCells,document.GetAllocator());
         document.AddMember("cell_rate",rateOfCells,document.GetAllocator());
-        //Triple loop to save all the states, during all of the turns
+        //Triple loop to save all the states and statuses, during all of the turns
         for(unsigned int k=0;k<fire.getStatesDuringTurns().size();k++){
             rapidjson::Value stateOfTurn(rapidjson::kArrayType);
+            rapidjson::Value statusOfTurn(rapidjson::kArrayType);
             for(unsigned int i=0;i<fire.getForest().getHeight();i++){
                 rapidjson::Value rowState(rapidjson::kArrayType);
+                rapidjson::Value rowStatus(rapidjson::kArrayType);
                 for(unsigned int j=0;j<fire.getForest().getWidth();j++){
                     rowState.PushBack(fire.getStatesDuringTurns()[k][i][j], document.GetAllocator());
+                    rowStatus.PushBack(fire.getStatusDuringTurns()[k][i][j], document.GetAllocator());
                 }
-               stateOfTurn.PushBack(rowState, document.GetAllocator());
+                stateOfTurn.PushBack(rowState, document.GetAllocator());
+                statusOfTurn.PushBack(rowStatus, document.GetAllocator());
             }
             stateOfCells.PushBack(stateOfTurn,document.GetAllocator());
+            statusOfCells.PushBack(statusOfTurn,document.GetAllocator());
         }
         //Adding this array to document
         document.AddMember("cell_state",stateOfCells,document.GetAllocator());
+        document.AddMember("cell_status",statusOfCells,document.GetAllocator());
         //File writing
         std::cout<<"File writing"<<std::endl;
         std::ofstream outfile("..\\"+fileName+".json");

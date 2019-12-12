@@ -8,6 +8,7 @@
 
 #include <vector>
 #include "Forest.h"
+#include <random>
 //Constants for winds, to make it easier to decide which one to use
 static const int NORTH = 0;
 static const int SOUTH = 1;
@@ -29,18 +30,22 @@ class Fire {
     std::vector<double> winds = {1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0};
     //Vector of graphs, to store how fire progressed during each turn
     std::vector<std::vector<std::vector<double>>> states_during_turns;
+
+    std::vector<std::vector<std::vector<int>>> status_during_turns;
     //Count of burned up cells, used to finish simulation early
     int burned_cell_count = 0;
     //Count of all cells in the forest
     int forest_cell_count;
     //Bool to check if forest is fully burned out
-    bool forest_burned_up;
+    bool forest_burned_up = false;
     //Reference to forest object, that will be burned
     Forest& forest;
     //Current time step
     int turn=0;
     //Bool to check if data was shown at the end
     bool final_data_shown = false;
+
+    std::mt19937_64 rng;
 public:
     /*
      * Main constructor
@@ -91,13 +96,13 @@ public:
      */
     double rateFunction(unsigned int yMain, unsigned int xMain, unsigned int yComp, unsigned int xComp);
     /*
-     * Function defining how relative position affects simulation
+     * Function defining how status of cell
      * Args:
-     * currentMovement - which cell we are now comparing main cell to
+     * status - status of neighbour cell
      * Returns:
      * Result of the equation
      */
-    double proximityFunction(unsigned int currentMovement);
+    double statusFunction(int status);
     /*
      * Function used to get state of the cell during current time step
      * Args:
@@ -106,6 +111,9 @@ public:
      * State of the cell in current time step
      */
     double getCellState(int x, int y);
+
+    const std::vector<std::vector<std::vector<int>>> &getStatusDuringTurns() const;
+
     /*
      * Getters and Setters
      */

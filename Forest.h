@@ -14,6 +14,7 @@ static const int HEIGHT = 0;
 static const int RATE = 1;
 static const int STATE = 2;
 static const int TURN = 4;
+static const int STATUS = 5;
 class Forest {
     //Vector of all forest cells inside the forest
     std::vector<std::vector<Cell>> forest_cells;
